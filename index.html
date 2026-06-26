@@ -23,6 +23,12 @@
   header.top .meta a { color:#7fd3db; }
   .vbadge { display:inline-block; background:#0a7c86; color:#fff; font-size:11px; font-weight:700;
     text-transform:uppercase; letter-spacing:.5px; padding:3px 9px; border-radius:6px; margin-bottom:10px; }
+  .reportnav { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .reportnav a { display:flex; align-items:center; gap:7px; text-decoration:none; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:#dbe7e9; font-size:13px; padding:7px 13px; border-radius:8px; }
+  .reportnav a:hover { background:rgba(255,255,255,.16); }
+  .reportnav a.active { background:#fff; color:#0f1720; border-color:#fff; font-weight:650; }
+  .reportnav a .c { background:rgba(255,255,255,.18); color:#dbe7e9; border-radius:999px; font-size:11px; padding:1px 7px; }
+  .reportnav a.active .c { background:#0a7c86; color:#fff; }
   .stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
   .stat { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14);
     border-radius:10px; padding:12px 16px; min-width:104px; }
@@ -111,6 +117,11 @@
     <h1>Microblink Industry Pages — Staging vs. Doc Copy Audit</h1>
     <div class="sub">Re-audit of the 11 staging industry pages against each tab of the source doc, after the team's updates. Two issue types are excluded by request (see below).</div>
     <div class="meta">Generated June 26, 2026 &middot; Source: <a href="https://docs.google.com/document/d/18fikAHD7Vp0SWsIyo6VBsbqcCX3MxnisOKUzJlZRKLY/edit" target="_blank" rel="noopener">Microblink Industries Pages [May 2026]</a> &middot; Staging: staging2.microblink.com</div>
+    <div class="reportnav">
+      <a class="active" href="index.html">Industry<span class="c">11</span></a>
+      <a href="technology.html">Technology<span class="c">13</span></a>
+      <a href="solutions.html">Solutions<span class="c">16</span></a>
+    </div>
     <div class="stats">
       <div class="stat"><div class="n">11</div><div class="l">Pages</div></div>
       <div class="stat"><div class="n">35</div><div class="l">Findings</div></div>

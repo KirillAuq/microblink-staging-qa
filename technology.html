@@ -1,0 +1,663 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Technology Pages — Microblink Staging vs. Doc Audit</title>
+<style>
+  :root{--panel:#fff;--ink:#1a2230;--muted:#5b6776;--line:#e4e8ee;--teal:#0a7c86;--teal-d:#075a61;
+    --green:#187a4b;--green-bg:#e9f7ee;--green-line:#bfe6cf;
+    --high:#d12b2b;--high-bg:#fdecec;--med:#b5760a;--med-bg:#fdf4e3;--low:#3a6ea5;--low-bg:#eef3f9;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#eef1f5;line-height:1.5}
+  a{color:var(--teal)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px 80px}
+  header.top{background:linear-gradient(135deg,#0f1720,#123b40);color:#fff;padding:30px 0 28px}
+  header.top .wrap{padding-bottom:0}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:-.2px}
+  header.top .sub{color:#b9cdd0;font-size:14px;max-width:780px}
+  header.top .meta{margin-top:12px;font-size:13px;color:#9fb6ba}
+  header.top .meta a{color:#7fd3db}
+  .vbadge{display:inline-block;background:#0a7c86;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 9px;border-radius:6px;margin-bottom:10px}
+  .reportnav{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .reportnav a{display:flex;align-items:center;gap:7px;text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#dbe7e9;font-size:13px;padding:7px 13px;border-radius:8px}
+  .reportnav a:hover{background:rgba(255,255,255,.16)}
+  .reportnav a.active{background:#fff;color:#0f1720;border-color:#fff;font-weight:650}
+  .reportnav a .c{background:rgba(255,255,255,.18);color:#dbe7e9;border-radius:999px;font-size:11px;padding:1px 7px}
+  .reportnav a.active .c{background:#0a7c86;color:#fff}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+  .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:11px 16px;min-width:104px}
+  .stat .n{font-size:22px;font-weight:700}
+  .stat .l{font-size:12px;color:#bcd0d3;text-transform:uppercase;letter-spacing:.5px}
+  .stat.high .n{color:#ff8d8d}.stat.med .n{color:#ffc874}.stat.low .n{color:#9ec5ff}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-top:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .panel h3{margin:0 0 4px;font-size:16px}
+  .panel .ph{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .panel.note{background:#fbfaf6;border-color:#ece3cd}
+  .panel.note p{margin:6px 0 0;font-size:13.5px;color:#7a6a45}
+  .sysrow{display:grid;grid-template-columns:230px 150px 1fr;gap:14px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .sysrow:first-of-type{border-top:none}
+  .sysname{font-weight:650}
+  .sysscope{color:var(--teal-d);font-weight:600}
+  .sysdesc{color:var(--muted)}
+  .controls{position:sticky;top:0;z-index:20;background:#eef1f5;padding:14px 0 10px;margin-top:8px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  .filterlabel{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .fbtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--ink)}
+  .fbtn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .fbtn.sev-high.active{background:var(--high);border-color:var(--high)}
+  .fbtn.sev-med.active{background:var(--med);border-color:var(--med)}
+  .fbtn.sev-low.active{background:var(--low);border-color:var(--low)}
+  .layout{display:grid;grid-template-columns:230px 1fr;gap:26px;margin-top:22px;align-items:start}
+  nav.side{position:sticky;top:64px}
+  nav.side .navtitle{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:4px 0 8px}
+  .navlink{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:13px}
+  .navlink:hover{background:#e3e8ef}
+  .navcount{background:#dfe4ec;color:var(--muted);border-radius:999px;font-size:11px;padding:1px 8px}
+  .navcount.has-high{background:#fde0e0;color:#b42020}
+  .industry{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:20px;box-shadow:0 1px 2px rgba(16,24,40,.04);scroll-margin-top:70px}
+  .ihead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .ititle{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ititle h2{margin:0;font-size:18px}
+  .statusbadge{font-size:11.5px;font-weight:650;padding:3px 10px;border-radius:999px}
+  .sb-ok{background:#e6f6ee;color:#187a4b}
+  .sb-warn{background:#fdf4e3;color:#b5760a}
+  .ichips{display:flex;gap:6px;flex-wrap:wrap}
+  .minichip{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .minichip.clean{background:#e6f6ee;color:#187a4b}
+  .sev-high{background:var(--high-bg);color:var(--high)}.sev-med{background:var(--med-bg);color:var(--med)}.sev-low{background:var(--low-bg);color:var(--low)}
+  .imeta{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+  .imeta a{word-break:break-all}
+  .statusnote{font-size:12.5px;color:var(--muted);background:#f6f8fb;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-top:12px}
+  .statusnote.warn{background:#fdf7ea;border-color:#f1dcb3;color:#7a5a16}
+  .findings{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+  .finding{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .fhead{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f8fafc;flex-wrap:wrap}
+  .fsection{font-weight:600;font-size:13.5px}
+  .pill{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .type-BUG{background:#222;color:#fff}.type-MISSING{background:#fde0e0;color:#b42020}.type-CHANGED{background:#e7eefb;color:#3556a8}.type-ADDED{background:#e9f7ee;color:#1c7a47}.type-MINOR{background:#eef0f3;color:#5b6776}
+  .cols{display:grid;grid-template-columns:1fr 1fr}
+  .col{padding:12px 14px;font-size:13.5px}
+  .col-doc{border-right:1px solid var(--line);background:#fbfdfd}
+  .col-stg{background:#fffdfb}
+  .collabel{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+  .col-doc .collabel{color:var(--teal-d)}.col-stg .collabel{color:#9a6308}
+  .coltext{white-space:pre-wrap}
+  .fnote{padding:9px 14px;font-size:12.5px;color:var(--muted);background:#f6f8fb;border-top:1px solid var(--line)}
+  .finding.hide,.industry.hide{display:none}
+  footer.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:30px}
+  @media (max-width:820px){.layout{grid-template-columns:1fr}nav.side{position:static}.cols{grid-template-columns:1fr}.col-doc{border-right:none;border-bottom:1px solid var(--line)}.sysrow{grid-template-columns:1fr;gap:2px}}
+</style></head><body>
+<header class="top"><div class="wrap">
+  <span class="vbadge">Staging copy audit</span>
+  <h1>Technology Pages — Staging vs. Doc Copy Audit</h1>
+  <div class="sub">13 technology/product pages compared against each tab of the redesign doc.</div>
+  <div class="meta">Generated June 26, 2026 &middot; Source: <a href="https://docs.google.com/document/d/1eWW8Cxrnuh_aEqV6WGLWPuEzKSH8gj-o4qMPPK7OJY8/edit" target="_blank" rel="noopener">Web Redesign - Technology Pages</a> &middot; Staging: staging2.microblink.com</div>
+  <div class="reportnav"><a class="" href="index.html">Industry<span class="c">11</span></a><a class="active" href="technology.html">Technology<span class="c">13</span></a><a class="" href="solutions.html">Solutions<span class="c">16</span></a></div>
+  <div class="stats">
+    <div class="stat"><div class="n">13</div><div class="l">Pages</div></div>
+    <div class="stat"><div class="n">48</div><div class="l">Findings</div></div>
+    <div class="stat high"><div class="n">11</div><div class="l">High</div></div>
+    <div class="stat med"><div class="n">23</div><div class="l">Medium</div></div>
+    <div class="stat low"><div class="n">14</div><div class="l">Low</div></div>
+  </div>
+</div></header>
+<div class="wrap">
+  <div class="panel note"><h3>About this audit</h3>
+<p>Full copy audit of the 13 technology/product pages against the “Web Redesign - Technology Pages” doc. Unlike the industry audit, no issue types are excluded. The doc holds several working drafts per page (V1/V2/“don't use this copy” blocks); where drafts compete, the latest non-deprecated version was treated as approved and the ambiguity is noted on the page. Expected template chrome (testimonials, blog feed, logo strips, footer) is excluded from findings.</p></div>
+  <div class="panel"><h3>Systemic patterns</h3>
+    <div class="ph">Issues that recur across pages — fixing the source/template once likely resolves most instances.</div>
+    <div class="sysrow"><div class="sysname">Stat values differ from the doc</div><div class="sysscope">Most pages</div><div class="sysdesc">Doc shows older figures (3.2B identities, 65,000+ data sources, page-specific 3rd stats); staging shows updated ones (4B+, etc.). Mostly the doc looks stale — but Sanctions “5,000+ data sources” (doc: 65,000+) and Workflow Builder&#x27;s swapped pass-rate stat look like real errors.</div></div><div class="sysrow"><div class="sysname">Shared “Why Microblink” block overrides page copy</div><div class="sysscope">Automation, Command Center, Identity 360</div><div class="sysdesc">Staging renders a shared platform block (“The Signal Layer, Owned End To End” / “Twelve years of computer vision…” / a Fraud Lab card) instead of each page&#x27;s doc-specific Why-Microblink copy. Correct on Real-time Intelligence; layered on or replacing copy elsewhere.</div></div><div class="sysrow"><div class="sysname">CTA labels reworded</div><div class="sysscope">Real-time Intelligence + others</div><div class="sysdesc">Doc&#x27;s consistent “Explore [X]” / “Learn More About Identity Intelligence OS” CTAs are reworded on staging (“Learn more about…”, “Read more about…”, “Explore Identity Intelligence OS” dropping “the”).</div></div><div class="sysrow"><div class="sysname">Identity Document Verification built from a different draft</div><div class="sysscope">IDV page</div><div class="sysdesc">Staging implements the earlier “Continuous Identity Document Verification” draft, not the doc&#x27;s “Trust Every Identity” version — the RIVR metrics table and Try-the-Demo section are absent. Needs a content-owner decision on the canonical draft (the doc itself holds 3 overlapping drafts).</div></div><div class="sysrow"><div class="sysname">Agentic / AI-agent messaging dropped</div><div class="sysscope">Orchestration, Workflow Builder</div><div class="sysdesc">Sentences about governing human + AI-agent flows were dropped from Orchestration (hero, a bullet, a Why-point) and Workflow Builder (handoff sentence) — weakening the agentic-commerce story vs the approved copy.</div></div>
+  </div>
+  <div class="controls"><span class="filterlabel">Filter by severity</span>
+    <button class="fbtn active" data-filter="all">All</button>
+    <button class="fbtn sev-high" data-filter="high">High</button>
+    <button class="fbtn sev-med" data-filter="med">Medium</button>
+    <button class="fbtn sev-low" data-filter="low">Low</button>
+  </div>
+  <div class="layout">
+    <nav class="side"><div class="navtitle">Pages</div><a class="navlink" href="#p-identity-document-verification">Identity Document Verification<span class="navcount has-high">8</span></a><a class="navlink" href="#p-real-time-intelligence">Real-time Intelligence<span class="navcount">5</span></a><a class="navlink" href="#p-payment-card-capture-and-fraud-signals">Payment Card Capture and Fraud Signals<span class="navcount has-high">5</span></a><a class="navlink" href="#p-genai-detection-and-deepfakes">GenAI Detection and Deepfakes<span class="navcount">3</span></a><a class="navlink" href="#p-liveness-detection">Liveness Detection<span class="navcount">4</span></a><a class="navlink" href="#p-biometrics">Biometrics<span class="navcount">1</span></a><a class="navlink" href="#p-sanction--pep-and-adverse-media">Sanction, PEP and Adverse Media<span class="navcount has-high">4</span></a><a class="navlink" href="#p-automation-and-orchestration">Automation and Orchestration<span class="navcount">2</span></a><a class="navlink" href="#p-workflow-builder">Workflow Builder<span class="navcount has-high">3</span></a><a class="navlink" href="#p-ui-customization">UI Customization<span class="navcount">2</span></a><a class="navlink" href="#p-orchestration">Orchestration<span class="navcount has-high">4</span></a><a class="navlink" href="#p-command-center">Command Center<span class="navcount has-high">4</span></a><a class="navlink" href="#p-identity-360">Identity 360<span class="navcount">3</span></a></nav>
+    <main><section class="industry" id="p-identity-document-verification">
+      <div class="ihead"><div class="ititle"><h2>Identity Document Verification</h2>
+        <span class="statusbadge sb-warn">Needs decision</span></div>
+        <div class="ichips"><span class="minichip sev-high">5 High</span><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Identity Document Verification</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/technology-identity-document-verification/" target="_blank" rel="noopener">/technology-identity-document-verification/</a></span></div>
+      <div class="statusnote warn">The doc contains 3 overlapping drafts of this page. Staging is built from the EARLIER “Continuous Identity Document Verification” draft, not the later “Trust Every Identity. Detect Every Threat.” version. Confirm which draft is canonical before treating these as defects — if the earlier draft is intended, most items below become matches.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero H1</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Trust Every Identity. Detect Every Threat.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Continuous Identity Document Verification for an AI-Driven World</div></div>
+      </div>
+      <div class="fnote">Staging uses the earlier-draft headline.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero subtitle</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Detect fake, stolen, and synthetic identities in real time with AI-powered document verification, biometrics, and continuous fraud intelligence.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Frameless adaptive capture for higher pass rates. GenAI document fraud check. Government-validated fraudulent document detection.</div></div>
+      </div>
+      <div class="fnote">Earlier-draft subtitle.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">“How It Works” structure</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Single “One flow. From scan to verified decision.” section with 5 numbered steps (Adaptive Capture, Fully Automated Verification, GenAI Detection, Global Coverage &amp; Speed, Customization &amp; Control).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">6-card layout (Adaptive Frameless Capture UI, Fully Automated Document Verification, Built To Catch What Generative AI Creates, Document Liveness Detection, Global Coverage &amp; Continuous Updates, Customization and Control).</div></div>
+      </div>
+      <div class="fnote">Entire core section is the wrong draft — headings, order, and bullets differ.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">DHS RIVR results table</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Metric | Microblink | DHS Threshold — System Error Rate 0.00%; False Accept Rate 0.88%; False Reject Rate 3.15% (&lt;10%).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Approved page shows the hard DHS numbers; staging omits the table.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Independent Validation section</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Eyebrow “SECTION 3: INDEPENDENT VALIDATION”; “Tested by the U.S. government. Top performer in every category.” + “…the only vendor to meet every high-performing benchmark.” + “Every other vendor failed on at least one critical dimension.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Eyebrow “EXTERNAL VALIDATION”; “Leader In Independent Government Testing”; no “Every other vendor failed…” line; no metrics.</div></div>
+      </div>
+      <div class="fnote">Earlier-draft heading/body; the RIVR numbers don&#x27;t appear.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Try the Demo” section</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“See what your users see. Takes 30 seconds.” + “Scan a test document or your own ID to experience the frameless capture flow live. No sign-up required.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Present in approved copy, absent on staging.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Identity Intelligence OS block</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“ID verification is one signal. The full picture is more powerful.” → connects with biometrics, behavioral signals, payment card checks, and AML screening.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Document verification is one signal…” → biometrics, database checks, payment card checks, non-ID documents, and watchlist screening.</div></div>
+      </div>
+      <div class="fnote">Earlier-draft wording; different capability list.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stat — DHS</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">1300+ fraudulent identity documents blocked per week (approved stats list)</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">#1 in DHS Document Validation Rally 2025</div></div>
+      </div>
+      <div class="fnote">Staging stat matches neither draft exactly; also note 2025 vs the doc&#x27;s 2026 reference — confirm year/award name.</div>
+    </div></div>
+    </section><section class="industry" id="p-real-time-intelligence">
+      <div class="ihead"><div class="ititle"><h2>Real-time Intelligence</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-med">3 Medium</span><span class="minichip sev-low">2 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Real-time Intelligence</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/real-time-intelligence/" target="_blank" rel="noopener">/real-time-intelligence/</a></span></div>
+      <div class="statusnote">Core copy matches well; differences are CTA rewording, the developer block, and minor stat/label edits.</div>
+      <div class="findings"><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">“How it works” capability-card CTAs (all)</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“Explore [Capability]” — e.g. “Explore Liveness”, “Explore Biometrics”, “Explore Payment Card Capture and Fraud Checks”, “Explore Gen AI Detection and Deepfakes”; “Learn more about Identity Intelligence OS”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Reworded to mixed phrasings — “Learn more about liveness detection”, “Read more about biometrics”, “Learn more about payment card scanning”, “Read more about Gen AI Detection”; “Explore Identity Intelligence OS”.</div></div>
+      </div>
+      <div class="fnote">All capability/OS CTA labels reworded vs the doc&#x27;s consistent “Explore [X]”.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">“How it works” — Gen AI card heading</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Gen AI and Other Document Fraud Signals</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Gen AI Fraud Detection</div></div>
+      </div>
+      <div class="fnote">Card heading shortened/reworded.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">“For developers” block</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Eyebrow “FOR DEVELOPERS”; CTA “Explore the Developer Docs”; items Deployment, Integration, Channels.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Eyebrow “INTEGRATION”; CTAs “Read the Docs” + “Try the Demo”; adds a “Performance — SDKs as small as 2.5MB. Up to 6x smaller than leading alternatives” item.</div></div>
+      </div>
+      <div class="fnote">Eyebrow changed, CTA split, new Performance item not in doc — confirm authoritative source.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Final CTA stat</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">See how 3.2 billion annual verifications translate to results.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">See how 4 billion annual verifications translate to results.</div></div>
+      </div>
+      <div class="fnote">3.2B → 4B (staging consistent with hero “4B+”; doc likely stale).</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">Stat labels &amp; capability bullets</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“4B+ identities processed annually”; “What Signals are Captured”; bullets w/ ampersands, no serial commas.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Identities processed annually” capitalized; “What Signals Are Captured”; “and” for “&amp;”, serial commas, hyphenation (“Selfie-to-ID”).</div></div>
+      </div>
+      <div class="fnote">Several small casing/punctuation/wording differences.</div>
+    </div></div>
+    </section><section class="industry" id="p-payment-card-capture-and-fraud-signals">
+      <div class="ihead"><div class="ititle"><h2>Payment Card Capture and Fraud Signals</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">3 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Payment Card Capture and Fraud Checks</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/technology-payment-card-capture-and-fraud-signals/" target="_blank" rel="noopener">/technology-payment-card-capture-and-fraud-signals/</a></span></div>
+      <div class="statusnote">Strong match overall; one dropped stat plus a few reorders/rewrites.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">Stats band</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“50+ languages supported for localization” (one of four stats).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— only 3 stats present (&lt;3s, 98%+, 50%).</div></div>
+      </div>
+      <div class="fnote">The 50+ languages stat is dropped.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">Stats band framing</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">— (doc lists only the stat bullets).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Adds heading “Identity Intelligence at a Global Scale” + “From onboarding through transaction verification and continuous monitoring…across billions of interactions annually.”</div></div>
+      </div>
+      <div class="fnote">Added framing copy (may be shared template, but it is page copy).</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Built-In Fraud Detection — card order</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Screen detection, Photocopy detection, BIN Check</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Screen detection, BIN Check, Photocopy detection</div></div>
+      </div>
+      <div class="fnote">BIN Check &amp; Photocopy swapped (card bodies unchanged).</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">For Developers — cross-platform SDKs</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Integrations for React Native and Flutter.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Integrations for React Native, Xamarin, Cordova and more.</div></div>
+      </div>
+      <div class="fnote">Different frameworks listed (Flutter dropped).</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Signal Binding card / How-it-Works intro / challenge bullets</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“…in the same session. Close the gap between who is transacting and how they are paying.”; “…from the moment of interaction.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“…in the session.” (2nd sentence dropped); “…from the moment of capture.”; challenge bullets reordered + “often” inserted.</div></div>
+      </div>
+      <div class="fnote">Minor rewrites, a dropped sentence, and bullet reorder.</div>
+    </div></div>
+    </section><section class="industry" id="p-genai-detection-and-deepfakes">
+      <div class="ihead"><div class="ititle"><h2>GenAI Detection and Deepfakes</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Gen AI Detection and Deepfakes</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/technology-genai-detection-and-deepfakes/" target="_blank" rel="noopener">/technology-genai-detection-and-deepfakes/</a></span></div>
+      <div class="statusnote">Hero &amp; core sections match; stat swap and several CTA/heading rewrites.</div>
+      <div class="findings"><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stats</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“+200% Increase in face-swap attacks…YoY” (3rd stat); no section heading.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">3rd stat replaced with “195+ Countries and territories”; adds heading “Identity Intelligence at a Global Scale”.</div></div>
+      </div>
+      <div class="fnote">Face-swap stat dropped; countries stat + heading substituted.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Continuous Identity Intelligence System</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">You define the thresholds. You control the outcomes.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Organizations define the thresholds. You control the outcomes.</div></div>
+      </div>
+      <div class="fnote">Voice inconsistency within the same line (“You”→“Organizations”).</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Fraud Report banner / Validation / Final CTA / Fraud Lab heading</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Banner: “What 2.9 billion identity checks across 195+ countries tell us…”; eyebrow “Independent Validation”; Final CTA “Build Identity Defenses…”; “The Fraud Lab: Defenses that lead threats, not follow them”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Banner rewritten (“…the ‘Sophistication Paradox’…”); eyebrow “EXTERNAL VALIDATION” + “(Document Validation track)”; Final CTA “Build Identity Trust…”; “The Fraud Lab: Defenses That Lead Threats” (truncated).</div></div>
+      </div>
+      <div class="fnote">Several heading/eyebrow/CTA rewrites; an Identity Intelligence OS integration block also added (from the archived draft).</div>
+    </div></div>
+    </section><section class="industry" id="p-liveness-detection">
+      <div class="ihead"><div class="ititle"><h2>Liveness Detection</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-med">3 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Liveness</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/liveness-detection/" target="_blank" rel="noopener">/liveness-detection/</a></span></div>
+      <div class="statusnote">Body copy matches; missing two card subheadings + a few stat/heading edits.</div>
+      <div class="findings"><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">Face Liveness card subheading</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">One Passive Selfie Check, Verified in Seconds</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent (jumps to body)</div></div>
+      </div>
+      <div class="fnote">Bold card subheading dropped.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">ID Document Liveness card subheading</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Document Presence, Verified at Capture</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent (jumps to body)</div></div>
+      </div>
+      <div class="fnote">Bold card subheading dropped.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">DHS / RIVR validation body</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“…Remote Identity Validation Rally (RIVR), Microblink was the only…across real-world smartphone identity capture scenarios.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“…(RIVR, Document Validation track)…across real-world identity capture scenarios.”</div></div>
+      </div>
+      <div class="fnote">Adds “Document Validation track”, drops “smartphone”.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stat value / eyebrow / final CTA / labels</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“3.2B identities processed annually”; eyebrow “Independent Validation”; Fraud Lab heading “…not follow them”; “iBeta Level 2 PAD”; “&lt;3s”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“4B+”; eyebrow “EXTERNAL VALIDATION”; Fraud Lab heading truncated; “iBeta / Level 2 PAD certification”; “&lt;3 s”; final CTA shortened to “Verify Every Actor”.</div></div>
+      </div>
+      <div class="fnote">Stat 3.2B→4B+ (likely intentional) + minor label/heading edits.</div>
+    </div></div>
+    </section><section class="industry" id="p-biometrics">
+      <div class="ihead"><div class="ititle"><h2>Biometrics</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Biometrics</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/biometrics/" target="_blank" rel="noopener">/biometrics/</a></span></div>
+      <div class="statusnote">Essentially clean — body copy matches the approved V2 draft verbatim; only cosmetic differences.</div>
+      <div class="findings"><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">H1 + stat labels</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">V2 H1 “Verified at onboarding. Working at every step after.”; “4B…”; “iBeta Level 2 PAD”; “&lt;3s”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Verified at Onboarding, and Working at Every Step After”; “4B+”; “iBeta / Level 2 PAD certification”; “&lt;3 s”.</div></div>
+      </div>
+      <div class="fnote">Staging uses the V2 headline (V1 unused — expected) with light title-casing + cosmetic stat-label tweaks. No content issues.</div>
+    </div></div>
+    </section><section class="industry" id="p-sanction--pep-and-adverse-media">
+      <div class="ihead"><div class="ititle"><h2>Sanction, PEP and Adverse Media</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Sanction list, PEP and Adverse Media</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/sanction-pep-adverse-media-monitoring/" target="_blank" rel="noopener">/sanction-pep-adverse-media-monitoring/</a></span></div>
+      <div class="statusnote">Body copy strong; one likely stat error and a grammar break.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stats</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“3.2B identities processed annually” / “65,000+ data sources”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“4B+ identities processed annually” / “5,000+ data sources”</div></div>
+      </div>
+      <div class="fnote">Identities 3.2B→4B+ (likely intentional), but data sources 65,000+ → 5,000+ is an order-of-magnitude drop — likely an error.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">Stats — 4th item</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Continuous monitoring across the actor lifecycle</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— only 3 stats present</div></div>
+      </div>
+      <div class="fnote">Fourth stat/line dropped.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Configurability — “Route on PEP match” card</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">If a PEP relevancy score exceeds the threshold and transaction value is above a set limit, automatically route to manual review.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">PEP relevancy score exceeds the threshold and transaction value is above a set limit, automatically route to manual review.</div></div>
+      </div>
+      <div class="fnote">Leading “If a ” dropped — sentence starts mid-clause (ungrammatical).</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Configurability — card order / hero eyebrow</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">6 cards in doc order; H1 once.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Cards reordered; H1 appears to repeat as eyebrow + H1 (possible duplication).</div></div>
+      </div>
+      <div class="fnote">Card reflow (bodies match) + possible headline duplication — verify.</div>
+    </div></div>
+    </section><section class="industry" id="p-automation-and-orchestration">
+      <div class="ihead"><div class="ititle"><h2>Automation and Orchestration</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Automation and Orchestration</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/automation-and-orchestration/" target="_blank" rel="noopener">/automation-and-orchestration/</a></span></div>
+      <div class="statusnote">Body copy matches; the “Why Microblink” block uses shared platform copy not in this page&#x27;s doc section.</div>
+      <div class="findings"><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">Why Microblink</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“Why Microblink” → goes straight into the 3 bullets (Full-stack signal ownership / Fraud Lab / Command Center control).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Adds eyebrow “WHY MICROBLINK” + subhead “The Signal Layer, Owned End To End” + intro “Twelve years of computer vision and biometric R&amp;D power the capture and verification at the source of interaction.”</div></div>
+      </div>
+      <div class="fnote">Shared platform Why-Microblink block layered on; confirm the added subhead/intro is approved for this page.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stats heading / CTAs</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“Identity Intelligence at Global Scale”; “4B identities…”; “Explore Orchestration”; “Explore the Identity Intelligence OS”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“…at a Global Scale”; “4B+ Identities…”; “Explore Orchestration Platform”; “Explore Identity Intelligence OS” (dropped “the”).</div></div>
+      </div>
+      <div class="fnote">Minor heading/stat/CTA wording.</div>
+    </div></div>
+    </section><section class="industry" id="p-workflow-builder">
+      <div class="ihead"><div class="ititle"><h2>Workflow Builder</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Workflow Builder</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/workflow-builder/" target="_blank" rel="noopener">/workflow-builder/</a></span></div>
+      <div class="statusnote">Cards match; a stat was swapped and an AI-agent sentence dropped.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stats</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">3rd stat: “98%+ first-time pass rate”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">3rd stat: “4B+ Identities processed annually”.</div></div>
+      </div>
+      <div class="fnote">Approved pass-rate stat replaced with a 4B+ stat not in this page&#x27;s copy.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Every Workflow Runs on a Dynamic Identity System” intro</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">A flow for human users hands off to one built for AI agents, with the same audit trail.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— middle sentence dropped</div></div>
+      </div>
+      <div class="fnote">Human→AI-agent handoff sentence removed.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stat label / final CTA</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“195+ countries and territories”; final CTA “Book a Demo” button.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“195+ countries and territories covered”; “Book a Demo” shown only as eyebrow (verify the form/button renders).</div></div>
+      </div>
+      <div class="fnote">Label “covered” appended; confirm final CTA button is present.</div>
+    </div></div>
+    </section><section class="industry" id="p-ui-customization">
+      <div class="ihead"><div class="ititle"><h2>UI Customization</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> UI Customization</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/ui-customizations/" target="_blank" rel="noopener">/ui-customizations/</a></span></div>
+      <div class="statusnote">Essentially clean — uses the approved alternate H1; only a stat add and a CTA label differ.</div>
+      <div class="findings"><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">Stats box</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">3 stats (195+, &lt;3s, 98%+ first-time pass rate).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">4 stats — adds “4B+ Identities processed annually”, reorders, appends “covered” to countries.</div></div>
+      </div>
+      <div class="fnote">Extra stat added (consistent with other pages; confirm intended).</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Final CTA button + H1 casing</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Final CTA “Book a demo”; H1 “…Any Product and Brand”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Final CTA “Book a meeting”; H1 “…Any Product And Brand” (capital A).</div></div>
+      </div>
+      <div class="fnote">CTA label differs; trivial casing. Uses the approved alternate H1 (other draft unused).</div>
+    </div></div>
+    </section><section class="industry" id="p-orchestration">
+      <div class="ihead"><div class="ititle"><h2>Orchestration</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Orchestration</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/orchestration/" target="_blank" rel="noopener">/orchestration/</a></span></div>
+      <div class="statusnote">Distinct from “Automation &amp; Orchestration”. Core sections match; stat changes + dropped AI-agent messaging.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stats</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">3.2B identities; “98% pass rate”; “3s”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">4B+ identities; “98%+ first-time pass rate”; “&lt;3s from capture to result”.</div></div>
+      </div>
+      <div class="fnote">3 of 4 stat values/labels differ (confirm which figures are approved).</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero body</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">…Route checks, trigger step-ups, escalate to review, and govern human and AI agent flows with the same policies and signals.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">…Route checks, trigger step-ups, and escalate-to-review flows use the same policies and signals.</div></div>
+      </div>
+      <div class="fnote">Drops the “govern human and AI agent flows” clause; rephrased (two doc drafts exist).</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“What You Can Orchestrate” + “Why Microblink”</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Bullet “Human and AI agent journeys, governed by the same rules”; Why-point “Built for human and agent journeys…”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— both absent</div></div>
+      </div>
+      <div class="fnote">Agent-journey messaging dropped in two places, weakening the page&#x27;s agentic story.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Integration cards / CTA</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“Unified RESTful endpoints…”; “Over-the-air updates push new document support and features…”; “No-code Web links”; CTA “Explore the Identity Intelligence OS”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“RESTful endpoints…” (dropped “Unified”); “Over-the-air updates for new document support…”; “Web Links”; “Explore Identity Intelligence OS”; adds “Read the Docs”.</div></div>
+      </div>
+      <div class="fnote">Several minor rewrites/label trims.</div>
+    </div></div>
+    </section><section class="industry" id="p-command-center">
+      <div class="ihead"><div class="ititle"><h2>Command Center</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Command Center</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/command-center/" target="_blank" rel="noopener">/command-center/</a></span></div>
+      <div class="statusnote">Rules/Analytics/Decision sections match; the “Why Microblink” block is replaced by shared platform copy and two bullet sentences dropped.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead"><span class="pill sev-high">High</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Why Microblink — section + “Fraud Lab” card</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading “Why Microblink”; intro “Algorithmic-level control over identity signals and the actor journey. That&#x27;s the difference.”; “The Fraud Lab engineers defenses against deepfakes, synthetic and GenAI threats before they reach production.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Heading “The Signal Layer, Owned End To End”; intro “Twelve years of computer vision and biometric R&amp;D…”; Fraud Lab card rewritten “An in-house red team simulates real-world attacks…”</div></div>
+      </div>
+      <div class="fnote">Page-specific Why-Microblink copy replaced by the shared platform block; deepfake/synthetic/GenAI language lost.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero H1</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Run Identity On Your Terms (labeled V1).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Control How Every Identity Decision Gets Made (V2).</div></div>
+      </div>
+      <div class="fnote">Staging shipped the V2 alternate — confirm which H1 is final.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">Rules Engine — bullets</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“Watchlists and block lists… Custom block lists included.”; “Trust score… Works for routing, decisioning, or both.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Both trailing sentences dropped.</div></div>
+      </div>
+      <div class="fnote">Two bullet detail-sentences removed.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Thresholds bullet / CTAs / labels</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“…configurable at the individual parameter level”; CTA “Learn More About Identity Intelligence OS”; final CTA “Book a Demo”; “4B…”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“…at the parameter level”; “Explore Identity Intelligence OS”; final CTA “Get in touch”; “4B+”.</div></div>
+      </div>
+      <div class="fnote">Minor edits.</div>
+    </div></div>
+    </section><section class="industry" id="p-identity-360">
+      <div class="ihead"><div class="ititle"><h2>Identity 360</h2>
+        <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div></div>
+      <div class="imeta"><span><b>Doc tab:</b> Identity 360</span>
+        <span><b>Staging:</b> <a href="https://staging2.microblink.com/identity-360/" target="_blank" rel="noopener">/identity-360/</a></span></div>
+      <div class="statusnote">High-quality match; the “Why Microblink” block adds a shared Fraud Lab card + intro not in the doc.</div>
+      <div class="findings"><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">Why Enterprises Choose Microblink</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">3 cards (Proprietary Technology, Adaptive Capture Experience, Configurable Decisioning); no intro sentence.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">4 cards — adds a “Fraud Lab” card (“An in-house red team simulates real-world attacks…”) + intro “Twelve years of computer vision and biometric R&amp;D…”</div></div>
+      </div>
+      <div class="fnote">Shared platform block adds a card + intro not in approved copy; reorders the rest.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead"><span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">“Built Into Identity Intelligence OS” CTA</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Learn More About Identity Intelligence OS</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Explore Identity Intelligence OS</div></div>
+      </div>
+      <div class="fnote">CTA reworded; same label reused on the intro block too.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead"><span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Stats / intro framing / final CTA</span></div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“…at Global Scale”; “4B…”; intro H2 only; final CTA “Book a Demo”.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“…at a Global Scale”; “4B+”; wrapped under “Inside Identity Intelligence OS”; final form CTA “Book a meeting”.</div></div>
+      </div>
+      <div class="fnote">Minor framing/label differences.</div>
+    </div></div>
+    </section>
+      <footer class="foot">Doc = approved copy in the redesign doc tab. Staging = copy live on staging2.microblink.com at audit time (June 26, 2026).<br>
+      Expected template chrome (blog feed, logo strips, booking/contact form, footer, nav) is excluded from findings. Items noted “verify” need a manual eyeball.</footer>
+    </main>
+  </div>
+</div>
+<script>
+  const btns=document.querySelectorAll('.fbtn'),findings=document.querySelectorAll('.finding'),secs=document.querySelectorAll('.industry');
+  btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(x=>x.classList.remove('active'));b.classList.add('active');
+    const f=b.dataset.filter;findings.forEach(el=>el.classList.toggle('hide',f!=='all'&&el.dataset.sev!==f));
+    secs.forEach(s=>{s.classList.toggle('hide',s.querySelectorAll('.finding:not(.hide)').length===0)});}));
+</script></body></html>
