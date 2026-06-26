@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microblink Industry Pages — Staging vs. Doc Copy Audit</title>
+<style>
+  :root {
+    --bg:#0f1720; --panel:#ffffff; --ink:#1a2230; --muted:#5b6776; --line:#e4e8ee;
+    --teal:#0a7c86; --teal-d:#075a61;
+    --high:#d12b2b; --high-bg:#fdecec; --high-line:#f6c9c9;
+    --med:#b5760a; --med-bg:#fdf4e3; --med-line:#f1dcb3;
+    --low:#3a6ea5; --low-bg:#eef3f9; --low-line:#cfe0f0;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); background:#eef1f5; line-height:1.5; }
+  a { color:var(--teal); }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px 80px; }
+  header.top { background:linear-gradient(135deg,#0f1720,#123b40); color:#fff; padding:34px 0 30px; }
+  header.top .wrap { padding-bottom:0; }
+  header.top h1 { margin:0 0 6px; font-size:26px; letter-spacing:-.2px; }
+  header.top .sub { color:#b9cdd0; font-size:14px; }
+  header.top .meta { margin-top:14px; font-size:13px; color:#9fb6ba; }
+  header.top .meta a { color:#7fd3db; }
+  .stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
+  .stat { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14);
+    border-radius:10px; padding:12px 16px; min-width:110px; }
+  .stat .n { font-size:24px; font-weight:700; }
+  .stat .l { font-size:12px; color:#bcd0d3; text-transform:uppercase; letter-spacing:.5px; }
+  .stat.high .n { color:#ff8d8d; } .stat.med .n { color:#ffc874; } .stat.low .n { color:#9ec5ff; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:20px 22px; margin-top:22px; box-shadow:0 1px 2px rgba(16,24,40,.04); }
+  .panel h3 { margin:0 0 4px; font-size:16px; }
+  .panel .ph { color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .sysrow { display:grid; grid-template-columns:200px 130px 1fr; gap:14px; padding:10px 0;
+    border-top:1px solid var(--line); font-size:13.5px; }
+  .sysrow:first-of-type { border-top:none; }
+  .sysname { font-weight:650; }
+  .sysscope { color:var(--teal-d); font-weight:600; }
+  .sysdesc { color:var(--muted); }
+  .controls { position:sticky; top:0; z-index:20; background:#eef1f5; padding:14px 0 10px; margin-top:8px;
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--line); }
+  .filterlabel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  .fbtn { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 14px;
+    font-size:13px; cursor:pointer; color:var(--ink); }
+  .fbtn.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .fbtn.sev-high.active { background:var(--high); border-color:var(--high); }
+  .fbtn.sev-med.active { background:var(--med); border-color:var(--med); }
+  .fbtn.sev-low.active { background:var(--low); border-color:var(--low); }
+  .layout { display:grid; grid-template-columns:210px 1fr; gap:26px; margin-top:22px; align-items:start; }
+  nav.side { position:sticky; top:64px; }
+  nav.side .navtitle { font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin:4px 0 8px; }
+  .navlink { display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:7px 10px; border-radius:8px; text-decoration:none; color:var(--ink); font-size:13.5px; }
+  .navlink:hover { background:#e3e8ef; }
+  .navcount { background:#dfe4ec; color:var(--muted); border-radius:999px; font-size:11px; padding:1px 8px; }
+  .industry { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:20px 22px; margin-bottom:20px; box-shadow:0 1px 2px rgba(16,24,40,.04); scroll-margin-top:70px; }
+  .ihead { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .ititle { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .ititle h2 { margin:0; font-size:19px; }
+  .statusbadge { font-size:11.5px; font-weight:650; padding:3px 10px; border-radius:999px; }
+  .sb-ok { background:#e6f6ee; color:#187a4b; }
+  .sb-redirect { background:#eef3f9; color:#3a6ea5; }
+  .sb-trashed { background:#fdecec; color:#c12b2b; }
+  .ichips { display:flex; gap:6px; flex-wrap:wrap; }
+  .minichip { font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px; }
+  .imeta { display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-top:8px; }
+  .imeta a { word-break:break-all; }
+  .statusnote { font-size:12.5px; color:var(--muted); background:#f6f8fb; border:1px solid var(--line);
+    border-radius:8px; padding:8px 12px; margin-top:12px; }
+  .findings { margin-top:14px; display:flex; flex-direction:column; gap:12px; }
+  .finding { border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .fhead { display:flex; align-items:center; gap:8px; padding:10px 12px; background:#f8fafc; flex-wrap:wrap; }
+  .fsection { font-weight:600; font-size:13.5px; }
+  .pill { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+    padding:2px 8px; border-radius:6px; white-space:nowrap; }
+  .sev-high { background:var(--high-bg); color:var(--high); }
+  .sev-med { background:var(--med-bg); color:var(--med); }
+  .sev-low { background:var(--low-bg); color:var(--low); }
+  .type-BUG { background:#222; color:#fff; }
+  .type-MISSING { background:#fde0e0; color:#b42020; }
+  .type-CHANGED { background:#e7eefb; color:#3556a8; }
+  .type-ADDED { background:#e9f7ee; color:#1c7a47; }
+  .type-MINOR { background:#eef0f3; color:#5b6776; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; }
+  .col { padding:12px 14px; font-size:13.5px; }
+  .col-doc { border-right:1px solid var(--line); background:#fbfdfd; }
+  .col-stg { background:#fffdfb; }
+  .collabel { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:5px; font-weight:600; }
+  .col-doc .collabel { color:var(--teal-d); }
+  .col-stg .collabel { color:#9a6308; }
+  .coltext { white-space:pre-wrap; }
+  .fnote { padding:9px 14px; font-size:12.5px; color:var(--muted); background:#f6f8fb; border-top:1px solid var(--line); }
+  .finding.hide { display:none; }
+  .industry.hide { display:none; }
+  footer.foot { color:var(--muted); font-size:12px; text-align:center; margin-top:30px; }
+  @media (max-width:820px) {
+    .layout { grid-template-columns:1fr; } nav.side { position:static; }
+    .cols { grid-template-columns:1fr; } .col-doc { border-right:none; border-bottom:1px solid var(--line); }
+    .sysrow { grid-template-columns:1fr; gap:2px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Microblink Industry Pages — Staging vs. Doc Copy Audit</h1>
+    <div class="sub">Comparing the 11 staging2 industry pages against the approved copy in each tab of the source doc.</div>
+    <div class="meta">Generated June 25, 2026 &middot; Source: <a href="https://docs.google.com/document/d/18fikAHD7Vp0SWsIyo6VBsbqcCX3MxnisOKUzJlZRKLY/edit" target="_blank" rel="noopener">Microblink Industries Pages [May 2026]</a> &middot; Staging: staging2.microblink.com</div>
+    <div class="stats">
+      <div class="stat"><div class="n">11</div><div class="l">Pages</div></div>
+      <div class="stat"><div class="n">51</div><div class="l">Findings</div></div>
+      <div class="stat high"><div class="n">18</div><div class="l">High</div></div>
+      <div class="stat med"><div class="n">16</div><div class="l">Medium</div></div>
+      <div class="stat low"><div class="n">17</div><div class="l">Low</div></div>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+
+  <div class="panel">
+    <h3>Systemic patterns (repeat across pages)</h3>
+    <div class="ph">Issues that recur on multiple pages — fixing the template once likely resolves most instances.</div>
+    <div class="sysrow"><div class="sysname">Core capabilities table missing</div><div class="sysscope">All 11 pages</div><div class="sysdesc">The “Core capabilities for [industry]” 6-row table is absent on every page. Likely a single missing WordPress template block.</div></div><div class="sysrow"><div class="sysname">7th fraud-challenge bullet dropped</div><div class="sysscope">10 of 11 pages</div><div class="sysdesc">The “Built for the biggest… fraud challenges” list ships with 6 of 7 bullets (Ecommerce only ever had 6). The dropped bullet differs per industry.</div></div><div class="sysrow"><div class="sysname">“Diffference” heading typo</div><div class="sysscope">5 pages</div><div class="sysdesc">“The Microblink Difference for…” is misspelled with three f’s on Workforce, Hospitality, Marketplaces, Telecom (1 instance) and Healthcare.</div></div><div class="sysrow"><div class="sysname">Hero CTA reduced</div><div class="sysscope">Most pages</div><div class="sysdesc">Doc CTA “Get in Touch or Try a Demo” renders as a single “Get in Touch” button (likely template behavior).</div></div><div class="sysrow"><div class="sysname">“Microblink For” → “for”</div><div class="sysscope">Several pages</div><div class="sysdesc">Section heading capitalization changed from “For” to “for.”</div></div><div class="sysrow"><div class="sysname">Dead “-2” URLs</div><div class="sysscope">Telecom, Healthcare</div><div class="sysdesc">telecommunications-2 and healthcare-2 are trashed → 404; live copy sits on the non-“-2” slug. Confirm canonical URLs before launch.</div></div>
+  </div>
+
+  <div class="controls">
+    <span class="filterlabel">Filter by severity</span>
+    <button class="fbtn active" data-filter="all">All</button>
+    <button class="fbtn sev-high" data-filter="high">High</button>
+    <button class="fbtn sev-med" data-filter="med">Medium</button>
+    <button class="fbtn sev-low" data-filter="low">Low</button>
+  </div>
+
+  <div class="layout">
+    <nav class="side">
+      <div class="navtitle">Industries</div>
+      <a class="navlink" href="#ind-ecommerce">Ecommerce<span class="navcount">7</span></a><a class="navlink" href="#ind-mobility---transportation">Mobility &amp; Transportation<span class="navcount">4</span></a><a class="navlink" href="#ind-workforce-verification">Workforce Verification<span class="navcount">5</span></a><a class="navlink" href="#ind-financial-services">Financial Services<span class="navcount">4</span></a><a class="navlink" href="#ind-hospitality---travel">Hospitality &amp; Travel<span class="navcount">5</span></a><a class="navlink" href="#ind-marketplaces">Marketplaces<span class="navcount">4</span></a><a class="navlink" href="#ind-telecommunications">Telecommunications<span class="navcount">5</span></a><a class="navlink" href="#ind-payments">Payments<span class="navcount">4</span></a><a class="navlink" href="#ind-crypto">Crypto<span class="navcount">3</span></a><a class="navlink" href="#ind-healthcare">Healthcare<span class="navcount">6</span></a><a class="navlink" href="#ind-igaming---gambling">iGaming &amp; Gambling<span class="navcount">4</span></a>
+    </nav>
+    <main>
+      <section class="industry" id="ind-ecommerce">
+      <div class="ihead">
+        <div class="ititle"><h2>Ecommerce</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-med">3 Medium</span><span class="minichip sev-low">2 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Ecommerce</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/ecommerce" target="_blank" rel="noopener">/industries/ecommerce</a></span>
+      </div>
+      <div class="statusnote">Loaded OK.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">“The Microblink Difference” — feature cards</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">5 cards, each with unique copy: “Identity verification that protects conversion” → “Most fraud tools treat every user like a suspect…”; “Continuous identity intelligence” → “Fraud does not stop after signup…”; “Fraud defense that sees more than documents” → “Fraudsters do not attack with just one signal…”; “Global scale, flexible deployment” → “Competitors in this category often emphasize global document support…”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">All 5 cards display the SAME body text — the “Fast, mobile-first” paragraph: “Ecommerce lives on the phone. Microblink’s capture and verification flows are optimized for mobile-first journeys…”</div></div>
+      </div>
+      <div class="fnote">Copy-paste/implementation bug: 4 of 5 cards lost their unique approved copy. Unique to Ecommerce — no other page has this.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for ecommerce” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">6-row table (ID document verification; Face biometrics and liveness; Payment card capture and intelligence; Real-time risk signals; Adaptive workflows; Continuous verification) with “What it helps prevent” + “Ecommerce impact” columns.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Doc itself flags this “MISSING ON WP TEMPLATE.” Same table is missing on all 11 pages.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero H1</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Reduce ecommerce fraud, protect shoppers and platforms, and keep checkout moving</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Reduce fraud, protect users and businesses, and keep checkout moving</div></div>
+      </div>
+      <div class="fnote">Dropped “ecommerce”; “shoppers and platforms” → “users and businesses.”</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">“Use cases for ecommerce teams” (all 4 blurbs)</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Full-length copy, e.g. “Chargebacks are expensive because they are not just payment losses. They create operational drag, reputational damage, and pressure on support teams…”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Condensed paraphrases, e.g. “Chargebacks hurt reputations. Microblink confirms identities to stop risky transactions before they become costly disputes.”</div></div>
+      </div>
+      <div class="fnote">Headings match; all 4 bodies rewritten/shortened. Unique to Ecommerce.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Why ecommerce teams choose Microblink” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">6 bullets including “Lower manual review volume.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">5 bullets — “Lower manual review volume” dropped. Adds a label “Inside the fraud lab:”</div></div>
+      </div>
+      <div class="fnote">One outcome bullet missing; staging adds a label not in the doc.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero intro paragraph</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Ends “…Microblink helps ecommerce teams verify who is really behind an account or transaction so they can stop fraud without slowing down legitimate customers.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">That final sentence is dropped from the hero (relocated to the “Microblink Difference” intro).</div></div>
+      </div>
+      <div class="fnote">Content preserved but moved; hero is shorter.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">Testimonial attribution / section title</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“LatinID”; section title “Why ecommerce teams choose Microblink.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Latin ID”; section title “Why Ecommerce Choose Microblink.”</div></div>
+      </div>
+      <div class="fnote">Spacing + casing/grammar.</div>
+    </div></div>
+    </section><section class="industry" id="ind-mobility---transportation">
+      <div class="ihead">
+        <div class="ititle"><h2>Mobility &amp; Transportation</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">2 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Mobility &amp; Transportation</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/mobility-transportation" target="_blank" rel="noopener">/industries/mobility-transportation</a></span>
+      </div>
+      <div class="statusnote">Loaded OK.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for mobility and transportation” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row capability table (Capability / What it helps prevent / Mobility and transportation impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Entire table block missing.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest… fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Dealership financing fraud at point of sale.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Only 6 bullets; 7th dropped.</div></div>
+      </div>
+      <div class="fnote">First 6 match exactly.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">Hero H1 casing</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Detect fraudulent documents and accurately verify every driver and customer</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Detect Fraudulent Documents and accurately verify every driver and customer</div></div>
+      </div>
+      <div class="fnote">Title-casing applied to “Fraudulent Documents.”</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Try a Demo” in hero (“Get in touch” appears later).</div></div>
+      </div>
+      <div class="fnote">Combined CTA split; likely template behavior.</div>
+    </div></div>
+    </section><section class="industry" id="ind-workforce-verification">
+      <div class="ihead">
+        <div class="ititle"><h2>Workforce Verification</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Workforce Verification</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/workforce-verification/" target="_blank" rel="noopener">/industries/workforce-verification/</a></span>
+      </div>
+      <div class="statusnote">Loaded OK (HTTP 200).</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">Above “Why workforce teams choose Microblink”</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">— (no such text)</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Lorem Ipsum Dolor”</div></div>
+      </div>
+      <div class="fnote">Placeholder dummy copy left live on the page. Unique to Workforce.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for workforce verification” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Workforce verification impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Entire section and table absent.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest… fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Cross-border worker verification gaps.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Only 6 bullets; 7th dropped.</div></div>
+      </div>
+      <div class="fnote">Ends at “Insider impersonation at high-trust task moments.”</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">“The Microblink Difference…” heading</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">The Microblink Difference for Workforce Verification</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">The Microblink Diffference for Workforce Verification</div></div>
+      </div>
+      <div class="fnote">Misspelling — “Diffference” (three f’s).</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">Testimonial layout + heading casing</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">“Microblink For Workforce Verification”; attribution name–title–company order.</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“Microblink for Workforce Verification”; renders company before title.</div></div>
+      </div>
+      <div class="fnote">Casing + template attribution order; quote wording exact.</div>
+    </div></div>
+    </section><section class="industry" id="ind-financial-services">
+      <div class="ihead">
+        <div class="ititle"><h2>Financial Services</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-low">2 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Financial Services</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/financial-services/" target="_blank" rel="noopener">/industries/financial-services/</a></span>
+      </div>
+      <div class="statusnote">Loaded OK.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for financial services” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Financial services impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Largest content gap on the page.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest… fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Money laundering and AML evasion at onboarding.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Only 6 bullets; 7th dropped.</div></div>
+      </div>
+      <div class="fnote">AML evasion vector lost.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch</div></div>
+      </div>
+      <div class="fnote">Single button; “Try a Demo” not surfaced.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">Section eyebrows + casing</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading “Microblink For Financial Services.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Adds eyebrows “SECURING THE CUSTOMER JOURNEY,” “The Microblink Difference,” “Why Microblink” + casing “For”→“for.”</div></div>
+      </div>
+      <div class="fnote">Template chrome; differentiator body copy itself matches verbatim.</div>
+    </div></div>
+    </section><section class="industry" id="ind-hospitality---travel">
+      <div class="ihead">
+        <div class="ititle"><h2>Hospitality &amp; Travel</h2>
+          <span class="statusbadge sb-redirect">Redirects → OK</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">1 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Hospitality &amp; Travel</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/hospitality-and-travel-2" target="_blank" rel="noopener">/industries/hospitality-and-travel-2</a></span>
+      </div>
+      <div class="statusnote">“-2” URL 301-redirects to canonical /industries/hospitality-and-travel/ (OK).</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for hospitality and travel” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Hospitality and travel impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">No &lt;table&gt; element or row text anywhere on page.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest… fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Identity fraud on vehicle rental and crew boarding flows.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Only 6 of 7 bullets.</div></div>
+      </div>
+      <div class="fnote">Vehicle-rental/crew-boarding vector dropped.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">“The Microblink Difference…” heading</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">The Microblink Difference for Hospitality and Travel</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">The Microblink Diffference for Hospitality and Travel</div></div>
+      </div>
+      <div class="fnote">“Diffference” (three f’s) — confirmed in DOM + screenshot.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch</div></div>
+      </div>
+      <div class="fnote">“or Try a Demo” not present in hero.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">“Microblink For…” heading casing</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Microblink For Hospitality and Travel</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Microblink for Hospitality and Travel</div></div>
+      </div>
+      <div class="fnote">Capitalization only.</div>
+    </div></div>
+    </section><section class="industry" id="ind-marketplaces">
+      <div class="ihead">
+        <div class="ititle"><h2>Marketplaces</h2>
+          <span class="statusbadge sb-redirect">Redirects → OK</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">1 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Marketplaces</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/marketplaces-2" target="_blank" rel="noopener">/industries/marketplaces-2</a></span>
+      </div>
+      <div class="statusnote">“-2” URL 302-redirects to canonical /industries/marketplaces/ (OK).</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for marketplaces” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row capability table (Capability / What it helps prevent / Marketplace impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Confirmed missing in rendered DOM; doc does not flag it for removal.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">“The Microblink Difference…” heading</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">The Microblink Difference for Marketplaces</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">The Microblink Diffference for Marketplaces</div></div>
+      </div>
+      <div class="fnote">“Diffference” (three f’s).</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest marketplace fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Deepfake-enabled account takeover on high-value accounts.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">6 bullets; 7th dropped.</div></div>
+      </div>
+      <div class="fnote">Other 6 match verbatim.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch</div></div>
+      </div>
+      <div class="fnote">Only first CTA label rendered.</div>
+    </div></div>
+    </section><section class="industry" id="ind-telecommunications">
+      <div class="ihead">
+        <div class="ititle"><h2>Telecommunications</h2>
+          <span class="statusbadge sb-trashed">URL 404 / trashed</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">2 Medium</span><span class="minichip sev-low">2 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Telecommunications</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/telecommunications-2" target="_blank" rel="noopener">/industries/telecommunications-2</a></span>
+      </div>
+      <div class="statusnote">Assigned “-2” URL 301 → /industries/telecommunications__trashed → 404 (trashed WP page). Live copy is at /industries/telecommunications. Comparison run against the live page.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">Routing / URL</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">—</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">/industries/telecommunications-2 → 404 (location: …/telecommunications__trashed).</div></div>
+      </div>
+      <div class="fnote">“-2” slug is trashed; correct live page is /industries/telecommunications. Confirm intended publish slug.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for telecommunications” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Telecom impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Confirmed missing twice.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest… fraud challenges” bullets (verify)</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Identity gaps in STIR/SHAKEN and CNAP compliance flows.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Fetch returned only 6 bullets.</div></div>
+      </div>
+      <div class="fnote">UNCONFIRMED — may be fetch truncation; eyeball check recommended.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">“The Microblink Difference…” heading (verify)</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">The Microblink Difference for Telecommunications</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">One structural scan showed “Diffference” (three f’s); a clean instance also present.</div></div>
+      </div>
+      <div class="fnote">Possible typo in one heading instance; verify in CMS.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch</div></div>
+      </div>
+      <div class="fnote">Single button.</div>
+    </div></div>
+    </section><section class="industry" id="ind-payments">
+      <div class="ihead">
+        <div class="ititle"><h2>Payments</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">2 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Payments</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/payments-2" target="_blank" rel="noopener">/industries/payments-2</a></span>
+      </div>
+      <div class="statusnote">Loaded OK.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for payments” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Payments impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Confirmed via two fetches; not in doc’s ‘Dropped’ notes — unexpected.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest payments fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Cross-border payment fraud and KYC gaps on remittance flows.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">6 bullets; 7th dropped.</div></div>
+      </div>
+      
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">“Microblink For…” heading casing</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Microblink For Payments</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Microblink for Payments</div></div>
+      </div>
+      <div class="fnote">Capitalization only.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch (with a “Try a Demo” footer CTA).</div></div>
+      </div>
+      <div class="fnote">Consistent split.</div>
+    </div></div>
+    </section><section class="industry" id="ind-crypto">
+      <div class="ihead">
+        <div class="ititle"><h2>Crypto</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-low">1 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Crypto</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/crypto-kyc-aml-verification-2" target="_blank" rel="noopener">/industries/crypto-kyc-aml-verification-2</a></span>
+      </div>
+      <div class="statusnote">Loaded OK.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for crypto” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Crypto impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Page jumps from differentiator cards straight to use cases.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest crypto fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Friendly fraud and chargebacks on fiat on/off-ramp transactions.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">6 bullets; 7th dropped.</div></div>
+      </div>
+      <div class="fnote">Confirmed across two fetches.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch</div></div>
+      </div>
+      <div class="fnote">Single button.</div>
+    </div></div>
+    </section><section class="industry" id="ind-healthcare">
+      <div class="ihead">
+        <div class="ititle"><h2>Healthcare</h2>
+          <span class="statusbadge sb-trashed">URL 404 / trashed</span></div>
+        <div class="ichips"><span class="minichip sev-high">2 High</span><span class="minichip sev-med">3 Medium</span><span class="minichip sev-low">1 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> Healthcare</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/healthcare-2" target="_blank" rel="noopener">/industries/healthcare-2</a></span>
+      </div>
+      <div class="statusnote">Assigned “-2” URL → 404 / …/healthcare__trashed (trashed WP page). Live copy is at /industries/healthcare. Comparison run against the live page.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">Routing / URL</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">—</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">/industries/healthcare-2 → 404 (…/healthcare__trashed).</div></div>
+      </div>
+      <div class="fnote">Assigned URL is dead; live content at /industries/healthcare. Confirm canonical slug before publishing.</div>
+    </div><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for healthcare” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / Healthcare impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Zero &lt;table&gt; tags on page; contradicts doc’s ‘full 10-block template’ claim.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest healthcare identity challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “HIPAA compliance gaps in digital onboarding and telehealth workflows.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">6 of 7 bullets.</div></div>
+      </div>
+      <div class="fnote">HIPAA-gap challenge dropped.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-BUG">Bug</span>
+        <span class="fsection">“The Microblink Difference…” heading</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">The Microblink Difference for Healthcare</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">The Microblink Diffference for Healthcare</div></div>
+      </div>
+      <div class="fnote">“Diffference” (three f’s).</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Why healthcare choose Microblink” bullets (verify)</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">6 outcome bullets (fewer medical identity fraud incidents; faster patient intake; etc.).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Not surfaced in extracted text.</div></div>
+      </div>
+      <div class="fnote">UNCONFIRMED — may be a component the scrape missed; manual visual check recommended.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-MINOR">Minor</span>
+        <span class="fsection">“Microblink For…” heading casing</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Microblink For Healthcare</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Microblink for Healthcare</div></div>
+      </div>
+      <div class="fnote">Capitalization only.</div>
+    </div></div>
+    </section><section class="industry" id="ind-igaming---gambling">
+      <div class="ihead">
+        <div class="ititle"><h2>iGaming &amp; Gambling</h2>
+          <span class="statusbadge sb-ok">Live</span></div>
+        <div class="ichips"><span class="minichip sev-high">1 High</span><span class="minichip sev-med">1 Medium</span><span class="minichip sev-low">2 Low</span></div>
+      </div>
+      <div class="imeta">
+        <span class="metaitem"><b>Doc tab:</b> iGaming &amp; Gambling</span>
+        <span class="metaitem"><b>Staging:</b> <a href="https://staging2.microblink.com/industries/igaming-gambling-2" target="_blank" rel="noopener">/industries/igaming-gambling-2</a></span>
+      </div>
+      <div class="statusnote">Loaded OK.</div>
+      <div class="findings"><div class="finding" data-sev="high">
+      <div class="fhead">
+        <span class="pill sev-high">High</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Core capabilities for iGaming and gambling” table</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Heading + 6-row table (Capability / What it helps prevent / iGaming impact).</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">— absent</div></div>
+      </div>
+      <div class="fnote">Confirmed via two fetches.</div>
+    </div><div class="finding" data-sev="med">
+      <div class="fhead">
+        <span class="pill sev-med">Medium</span>
+        <span class="pill type-MISSING">Missing</span>
+        <span class="fsection">“Built for the biggest… fraud challenges” bullets</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">7th bullet: “Geolocation and jurisdiction fraud from restricted territories.”</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">6 bullets; 7th dropped.</div></div>
+      </div>
+      <div class="fnote">Other 6 match verbatim.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-ADDED">Added</span>
+        <span class="fsection">Closing CTA (above footer)</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">—</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">“See Identity Verification in Action” + “Designed for modern digital onboarding…”</div></div>
+      </div>
+      <div class="fnote">Generic template CTA, not in approved copy. Informational.</div>
+    </div><div class="finding" data-sev="low">
+      <div class="fhead">
+        <span class="pill sev-low">Low</span>
+        <span class="pill type-CHANGED">Changed</span>
+        <span class="fsection">Hero CTA</span>
+      </div>
+      <div class="cols">
+        <div class="col col-doc"><div class="collabel">Doc (approved)</div><div class="coltext">Get in Touch or Try a Demo</div></div>
+        <div class="col col-stg"><div class="collabel">Staging (live)</div><div class="coltext">Get in Touch</div></div>
+      </div>
+      <div class="fnote">Single button.</div>
+    </div></div>
+    </section>
+      <footer class="foot">Doc = approved copy in the Google Doc tab. Staging = copy live on staging2.microblink.com at audit time.<br>
+      “Expected” template elements (blog module, booking/contact CTA, footer nav, logo strips, FAQ/blog present “in WP, not in doc”) are excluded from findings. Items marked “verify” need a manual eyeball check.</footer>
+    </main>
+  </div>
+</div>
+<script>
+  const btns = document.querySelectorAll('.fbtn');
+  const findings = document.querySelectorAll('.finding');
+  const industries = document.querySelectorAll('.industry');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const f = b.dataset.filter;
+    findings.forEach(el => el.classList.toggle('hide', f !== 'all' && el.dataset.sev !== f));
+    industries.forEach(sec => {
+      const visible = sec.querySelectorAll('.finding:not(.hide)').length;
+      sec.classList.toggle('hide', visible === 0);
+    });
+  }));
+</script>
+</body>
+</html>
